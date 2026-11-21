@@ -1,0 +1,54 @@
+{
+  "name": "mcp-token-cost",
+  "version": "0.1.0",
+  "description": "What your MCP servers cost in tokens before you type a word: per server, per tool, against 46,000 measured MCP servers, with cache-breaking checks and a CI budget",
+  "type": "module",
+  "bin": {
+    "mcp-token-cost": "bin/mcp-token-cost.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "data/distribution.json",
+    "data/prices.json",
+    "action.yml",
+    "README.md",
+    "CHANGELOG.md",
+    "SECURITY.md",
+    "LICENSE-APACHE",
+    "LICENSE-MIT"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "gpt-tokenizer": "4.0.4"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "tokens",
+    "context-window",
+    "prompt-cache",
+    "llm",
+    "cost",
+    "ci"
+  ],
+  "license": "Apache-2.0 OR MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexar76/mcp-token-cost.git"
+  },
+  "homepage": "https://github.com/alexar76/mcp-token-cost#readme",
+  "peerDependencies": {
+    "@anthropic-ai/sdk": ">=1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": {
+      "optional": true
+    }
+  }
+}

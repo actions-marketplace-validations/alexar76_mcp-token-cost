@@ -1,0 +1,67 @@
+name: "MCP token cost"
+description: "Count what an MCP server's tool list costs in tokens and fail the job when it grows past your limit"
+branding:
+  icon: "bar-chart-2"
+  color: "gray-dark"
+inputs:
+  stdio:
+    description: "Command that starts your MCP server over stdio, e.g. 'node dist/index.js'"
+    required: false
+  url:
+    description: "URL of a streamable HTTP MCP server"
+    required: false
+  tools:
+    description: "A saved tools/list answer (JSON)"
+    required: false
+  config:
+    description: "An MCP client config file (mcpServers) to scan instead"
+    required: false
+  baseline:
+    description: "Snapshot to compare with (make one with: npx mcp-token-cost snapshot -o mcp-tokens.json). Without it the action only reports."
+    required: false
+  max-increase:
+    description: "Allowed growth of the total, the descriptions and the input schemas, each on its own"
+    default: "10%"
+  noise:
+    description: "Growth below this many tokens never fails"
+    default: "50"
+  budget:
+    description: "Fail when all servers together exceed this many tokens"
+    required: false
+  fail-on:
+    description: "Fail on a finding at or above this severity: high, medium or low"
+    required: false
+  version:
+    description: "mcp-token-cost version"
+    default: "0.1.0"
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      env:
+        IN_STDIO: ${{ inputs.stdio }}
+        IN_URL: ${{ inputs.url }}
+        IN_TOOLS: ${{ inputs.tools }}
+        IN_CONFIG: ${{ inputs.config }}
+        IN_BASELINE: ${{ inputs.baseline }}
+        IN_MAX: ${{ inputs.max-increase }}
+        IN_NOISE: ${{ inputs.noise }}
+        IN_BUDGET: ${{ inputs.budget }}
+        IN_FAIL_ON: ${{ inputs.fail-on }}
+        IN_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        src=()
+        [ -n "$IN_STDIO" ] && src+=(--stdio "$IN_STDIO")
+        [ -n "$IN_URL" ] && src+=(--url "$IN_URL")
+        [ -n "$IN_TOOLS" ] && src+=(--tools "$IN_TOOLS")
+        [ -n "$IN_CONFIG" ] && src+=(--config "$IN_CONFIG")
+        if [ -n "$IN_BASELINE" ]; then
+          extra=(--max-increase "$IN_MAX" --noise "$IN_NOISE")
+          [ -n "$IN_BUDGET" ] && extra+=(--budget "$IN_BUDGET")
+          npx --yes "mcp-token-cost@${IN_VERSION}" check --baseline "$IN_BASELINE" "${src[@]}" "${extra[@]}"
+        else
+          extra=()
+          [ -n "$IN_FAIL_ON" ] && extra+=(--fail-on "$IN_FAIL_ON")
+          npx --yes "mcp-token-cost@${IN_VERSION}" scan "${src[@]}" "${extra[@]}"
+        fi
