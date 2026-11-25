@@ -26,7 +26,7 @@ Node 18.17 or newer. Keep runtime dependencies at one (`gpt-tokenizer`); `@anthr
   HISTOR's Python implementation. A change that moves them changes every comparison with the population curve and
   with HISTOR records, so it needs an issue and a matching change on HISTOR's side.
 - **A finding has a code, a severity, a message that says what to do, and a test that fails without it.** Size it in
-  tokens (`tokens`) only when fixing it would remove those tokens from every request; a prompt-cache cost goes in
+  tokens (`tokens`) only when fixing it would remove those tokens from the measured list. A prompt-cache cost goes in
   `cacheTokens`.
 - **A new client config** goes in `src/config.js` with its documented location and a parser test in
   `test/config.test.js`. Cite the client's documentation in the pull request.

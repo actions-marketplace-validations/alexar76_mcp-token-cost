@@ -9,9 +9,10 @@
 [![license](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue)](#license)
 [![data](https://img.shields.io/badge/data-HISTOR%20CC%20BY%204.0-6b6b66)](https://histor.modelmarket.dev/datasets/)
 
-Every MCP server you connect sends its tool definitions to the model on every request, before you type a word.
-`mcp-token-cost` tells you how many tokens that is: per server, per tool, per part of a tool, against
-45,922 MCP servers measured in public, with the things that quietly break your prompt cache.
+`mcp-token-cost` counts a complete MCP tool list, with a breakdown by server, tool and schema field. Compare
+the count against 45,922 MCP servers measured in public and find changes that can disrupt prompt caching.
+The client decides which schemas reach the model. Some send the complete list, while clients with features
+such as Code Mode can expose discovery and execution tools and load individual schemas on demand.
 
 ```bash
 npx mcp-token-cost
@@ -21,7 +22,7 @@ It reads the MCP config of Claude Desktop, Claude Code, Cursor, VS Code, Windsur
 server's tools the way your client does, and prints:
 
 ```text
-MCP tool definitions: 28,632 tokens on every request  (o200k_base)
+MCP tool definitions: 28,632 tokens for the full list  (o200k_base)
 ███····················· 14.3 % of a 200,000-token window · 5 servers, 93 tools
 A typical MCP server costs 1,311 tokens (median of 45,922 packages and remote hosts in HISTOR, one list each, 2026-11-16); 90th percentile 8,200.
 
@@ -40,14 +41,14 @@ Heaviest tools
       806  notion › API-post-page  (description 17, schema 779) · heaviest property children 62
       756  notion › API-query-data-source  (description 18, schema 727) · heaviest property filter_properties 47
 
-Per 1,000 requests that send this list  (list prices; clients that load tools on demand send less)
+Per 1,000 requests that send this list  (list prices)
   Claude Opus 5.5        $114.53 uncached ·    $5.86 cache kept warm ·  $143.16 cache rewritten every time
   Claude Sonnet 5.5       $57.26 uncached ·    $2.93 cache kept warm ·   $71.58 cache rewritten every time
   Claude Haiku 5.5         $2.86 uncached ·        – cache kept warm ·    $3.58 cache rewritten every time
 
 Findings (1)
   MED  CONTEXT_SHARE  (all)
-       Tool definitions and instructions take 28,632 tokens, 14.3 % of a 200,000-token window, before the first message.
+       The full tool list and server instructions total 28,632 tokens, 14.3 % of a 200,000-token window.
 ```
 
 The demo above is `--offline` on a five-server config: nothing was started, every definition came from
@@ -130,22 +131,21 @@ GitHub Actions (the table lands in the job summary):
 | `LIST_ORDER_UNSTABLE` | Two `tools/list` reads in one session returned the same tools in another order. Tools come first in the prompt, so each new order is a full prompt-cache write. |
 | `LIST_CONTENT_UNSTABLE` | Two reads returned different definitions: every refetch rewrites the cache from the tools onward. |
 | `VOLATILE_TEXT` | A date, timestamp, UUID or session id inside a definition: it changes, and the cache with it. |
-| `CONTEXT_SHARE` | The whole setup takes more than 10 % of the context window before the first message. |
+| `CONTEXT_SHARE` | The full tool list and server instructions would use more than 10 % of the context window. |
 | `DUPLICATE_TOOL_NAME` | Two servers offer a tool with the same name. |
 | `REPEATED_TEXT` | The same sentence in three or more descriptions of one server: once in the server's instructions is enough. |
 | `LARGE_ENUM` | An enum with more than 40 values. |
 | `LONG_DESCRIPTION`, `LARGE_SCHEMA` | Over 500 / 1,500 tokens. |
 | `DEEP_SCHEMA` | More than 5 levels of properties and items. |
 
-Each sized finding says how many tokens per request fixing it would save.
+Each sized finding estimates how many tokens fixing it would remove from the full list.
 
 ## How it counts
 
 Exactly the way [HISTOR](https://histor.modelmarket.dev) counts, so a local number, a HISTOR record and the
-population curve agree to the token (checked in the test suite against HISTOR's Python reference): each tool is
-sent as `{"name", "description", "input_schema"}` in compact JSON, a list costs the sum of its tools, and each part
-is the JSON value as written. Server `instructions`, which clients put in the system prompt, are counted on their
-own line.
+population curve agree to the token (checked in the test suite against HISTOR's Python reference). The counter
+serializes each tool as `{"name", "description", "input_schema"}` in compact JSON and adds the per-tool counts.
+Each part is counted as its JSON value. Server `instructions` are counted separately.
 
 The population curve (`data/distribution.json`) comes from HISTOR's weekly snapshot of 2026-11-16 (CC BY 4.0),
 rebuilt with `tools/build_distribution.py`: every listed server with a current tool list, 53,399 of them (27,440 npm
@@ -157,6 +157,8 @@ largest 699,910.
 ## What it does not tell you
 
 - **What your client actually sends.** Some clients load tools on demand or drop fields; this counts the full list.
+- **Actual provider usage.** For a client with Code Mode, measure its model-facing tool payload and compare it
+  with the full catalogue. Read usage for the entire request from the provider's response.
 - **The provider's own wrapping**, except with `--claude`.
 - **Prices change.** The money table uses list prices in `data/prices.json` (dated); pass `--price` for yours.
 - **Which servers are good.** The rank is a token count, not a quality score.

@@ -45,7 +45,7 @@ export function render(m) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MCP token cost</title><style>${CSS}</style></head><body><main>
 <h1>MCP tool token cost</h1><div class="muted">${esc(m.generatedAt)} · tokenizer ${esc(m.tokenizer)}</div>
 <div class="cards">
-<div class="card"><span class="muted">Sent on every request</span><b>${fmt(t.sent)}</b><span class="muted">tokens</span></div>
+<div class="card"><span class="muted">Full tool list</span><b>${fmt(t.sent)}</b><span class="muted">tokens</span></div>
 <div class="card"><span class="muted">Share of a ${fmt(m.window)} window</span><b>${(t.windowShare * 100).toFixed(1)} %</b><div class="meter"><span style="width:${Math.min(100, t.windowShare * 100).toFixed(1)}%"></span></div></div>
 <div class="card"><span class="muted">Servers · tools</span><b>${t.servers} · ${t.tools}</b>${t.failed ? `<span class="high">${t.failed} could not be read</span>` : ""}</div>
 ${t.claude != null ? `<div class="card"><span class="muted">Claude's count, with its tool-use prompt</span><b>${fmt(t.claude)}</b></div>` : ""}
@@ -55,7 +55,7 @@ ${pop ? `<div class="card"><span class="muted">Typical MCP server</span><b>${fmt
 <div class="wrap"><table><thead><tr><th>Server</th><th>Tools</th><th>Tokens</th><th>Split</th><th>Rank</th><th>Claude</th></tr></thead><tbody>${rows}</tbody></table></div>
 <p class="muted">Rank: the share of MCP packages and remote hosts HISTOR observes (one list each) whose list costs less.</p>
 ${tools ? `<h2>Heaviest tools</h2><div class="wrap"><table><thead><tr><th>Tokens</th><th>Tool</th><th>Split</th></tr></thead><tbody>${tools}</tbody></table></div>` : ""}
-${money ? `<h2>Per 1,000 requests that send this list</h2><div class="wrap"><table><thead><tr><th>Model</th><th>Uncached</th><th>Cache kept warm</th><th>Cache rewritten every time</th></tr></thead><tbody>${money}</tbody></table></div><p class="muted">List prices. A client that loads tools on demand sends less.</p>` : ""}
+${money ? `<h2>Per 1,000 requests that send this list</h2><div class="wrap"><table><thead><tr><th>Model</th><th>Uncached</th><th>Cache kept warm</th><th>Cache rewritten every time</th></tr></thead><tbody>${money}</tbody></table></div><p class="muted">List prices. Clients may expose a different set of tools on each request.</p>` : ""}
 <h2>Findings (${m.findings.length})</h2>${findings ? `<ul>${findings}</ul>` : `<p class="muted">None.</p>`}
 <footer>mcp-token-cost · counted as each tool's {name, description, input_schema} in compact JSON${pop ? ` · population: <a href="${esc(pop.dataset)}">HISTOR snapshot ${esc(String(pop.createdAt).slice(0, 10))}</a> (CC BY 4.0)` : ""}</footer>
 </main></body></html>
