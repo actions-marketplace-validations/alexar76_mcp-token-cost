@@ -1,6 +1,6 @@
 // What in a tool list costs more than it needs to, or breaks the prompt cache.
 // Each finding: {code, severity: "high"|"medium"|"low"|"info", server, tool?, message, tokens?}.
-// "tokens" is what fixing it would save per request, when that can be stated.
+// "tokens" is the estimated reduction in the measured list when a finding can be sized.
 import { countText } from "./count.js";
 
 const VOLATILE = [
@@ -104,11 +104,11 @@ export function setupFindings(results, { window = 200000 } = {}) {
   }
   for (const [tool, servers] of owners) if (new Set(servers).size > 1)
     f.push({ code: "DUPLICATE_TOOL_NAME", severity: "medium", server: [...new Set(servers)].join(", "), tool,
-      message: `"${tool}" is offered by ${new Set(servers).size} servers. Clients rename or drop one of them, and the model sees near-identical definitions twice.` });
+      message: `"${tool}" is offered by ${new Set(servers).size} servers. A client that loads both may expose them under different names.` });
   const total = results.reduce((s, r) => s + (r.count?.total ?? 0) + (r.instructionsTokens ?? 0), 0);
   const share = total / window;
   if (share > 0.1)
     f.push({ code: "CONTEXT_SHARE", severity: share > 0.25 ? "high" : "medium", server: "(all)",
-      message: `Tool definitions and instructions take ${total.toLocaleString("en-US")} tokens, ${(share * 100).toFixed(1)} % of a ${window.toLocaleString("en-US")}-token window, before the first message.` });
+      message: `The full tool list and server instructions total ${total.toLocaleString("en-US")} tokens, ${(share * 100).toFixed(1)} % of a ${window.toLocaleString("en-US")}-token window.` });
   return f;
 }

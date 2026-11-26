@@ -15,7 +15,7 @@ export function render(m) {
   const out = [];
   const t = m.totals;
   const claude = t.claude != null ? `; Claude counts ${fmt(t.claude)} with its tool-use prompt` : "";
-  out.push(bold(`MCP tool definitions: ${fmt(t.sent)} tokens on every request`) + dim(`  (${m.tokenizer}${claude})`));
+  out.push(bold(`MCP tool definitions: ${fmt(t.sent)} tokens for the full list`) + dim(`  (${m.tokenizer}${claude})`));
   out.push(
     `${bar(t.windowShare)} ${(t.windowShare * 100).toFixed(1)} % of a ${fmt(m.window)}-token window · ` +
       `${t.servers} server${t.servers === 1 ? "" : "s"}, ${t.tools} tools` +
@@ -45,14 +45,14 @@ export function render(m) {
     out.push("");
   }
   if (m.money.length) {
-    out.push(bold("Per 1,000 requests that send this list") + dim("  (list prices; clients that load tools on demand send less)"));
+    out.push(bold("Per 1,000 requests that send this list") + dim("  (list prices)"));
     for (const r of m.money) {
       out.push(`  ${pad(r.model, 20)} ${pad(usd(r.uncached), 9, true)} uncached · ${pad(usd(r.cachedWarm), 8, true)} cache kept warm · ${pad(usd(r.cacheRewritten), 8, true)} cache rewritten every time`);
     }
     out.push("");
   }
   if (m.findings.length) {
-    out.push(bold(`Findings (${m.findings.length})`) + (m.savings ? dim(`  the sized ones add up to ~${fmt(m.savings)} tokens per request`) : ""));
+    out.push(bold(`Findings (${m.findings.length})`) + (m.savings ? dim(`  estimated full-list savings: ~${fmt(m.savings)} tokens`) : ""));
     for (const f of m.findings.slice(0, 30)) {
       out.push(`  ${SEV[f.severity]()} ${f.code}  ${f.server}${f.tool ? ` › ${f.tool}` : ""}`);
       out.push(`       ${f.message}`);

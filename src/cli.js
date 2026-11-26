@@ -234,7 +234,7 @@ export async function main(argv) {
     const L = [`${rec.server.endpoint}  (${rec.server.page})`];
     L.push(c ? `${fmt(c.total)} tokens, ${c.tools} tools: names ${fmt(c.parts.name)}, descriptions ${fmt(c.parts.description)}, input schemas ${fmt(c.parts.inputSchema)} · observed ${String(rec.server.lastObserved).slice(0, 10)}` : "no tool list recorded");
     if (rec.changes.length) {
-      L.push("", "Recent changes (before → after, tokens per request):");
+      L.push("", "Recent changes (before → after, full-list tokens):");
       for (const ch of rec.changes) {
         const t = ch.totals?.sent ?? {};
         const v = ch.toPackageVersion ? ` (${ch.fromPackageVersion ?? "?"} → ${ch.toPackageVersion})` : "";
